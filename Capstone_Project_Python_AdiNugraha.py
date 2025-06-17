@@ -78,6 +78,30 @@ def tampilkan_tabel(data, header="keys", title=None):
         print(tabulate(data, headers=header, tablefmt="grid"))
     else:
         print("Data tidak tersedia.")
+        
+def konfirmasi_yn(prompt="Apakah yakin? (y/n): "):
+    while True:
+        jawab = input(prompt).strip().lower()
+        if jawab == "y":
+            return "y"
+        elif jawab == "n":
+            return "n"
+        else:
+            print("Input tidak valid. Masukkan 'y' atau 'n'.")
+
+def input_harga(prompt="Harga: "):
+    while True:
+        inp = input(prompt).strip()
+        if inp == "":
+            return None
+        try:
+            harga = int(inp)
+            if harga >= 1000:
+                return harga
+            else:
+                print("Harga harus minimal 1000")
+        except ValueError:
+            print("Input harus angka.")
 
 # ========== LOGIN ==========
 
@@ -117,7 +141,7 @@ def tambah_menu_makanan_batch():
             print("Nama menu sudah ada, silakan pilih nama lain!")
             input("Tekan Enter untuk lanjut...")
             continue
-        harga = input_int("Harga: ")
+        harga = input_harga("Harga: ")
         if harga is None:
             clear()
             break
@@ -128,13 +152,13 @@ def tambah_menu_makanan_batch():
         id_baru = max([m['id'] for m in menu_makanan + batch], default=0) + 1
         data_baru = {"id": id_baru, "nama": nama, "harga": harga, "stok": stok}
         batch.append(data_baru)
-        lanjut = input("Tambah menu lagi? (y/n): ").strip().lower()
+        lanjut = konfirmasi_yn("Tambah menu lagi? (y/n): ").strip().lower()
         if lanjut != "y":
             break
     if batch:
         clear()
         tampilkan_tabel(batch, title="Konfirmasi Data yang Akan Ditambahkan")
-        simpan = input("Simpan semua data di atas? (y/n): ").strip().lower()
+        simpan = konfirmasi_yn("Simpan semua data di atas? (y/n): ").strip().lower()
         if simpan == "y":
             menu_makanan.extend(batch)
             print("Semua menu berhasil ditambahkan!")
@@ -236,13 +260,13 @@ def tambah_pesanan_batch_multi():
         print(f"Total Harga : {total_harga}")
         print(f"Status      : {status}")
         print(f"Tanggal     : {tanggal_pesanan}")
-        konfirmasi = input("\nSimpan pesanan ini? (y/n): ").strip().lower()
+        konfirmasi = konfirmasi_yn("\nSimpan pesanan ini? (y/n): ").strip().lower()
         if konfirmasi == "y":
             batch.append(data_pesanan)
         else:
             print("Pesanan batal ditambahkan.")
             input("Tekan Enter untuk lanjut...")
-        lanjut = input("Tambah pesanan lagi? (y/n): ").strip().lower()
+        lanjut = konfirmasi_yn("Tambah pesanan lagi? (y/n): ").strip().lower()
         if lanjut != "y":
             break
 
@@ -260,7 +284,7 @@ def tambah_pesanan_batch_multi():
                 "Tanggal": p["tanggal"]
             })
         tampilkan_tabel(preview_batch, title="Konfirmasi Pesanan yang Akan Disimpan")
-        simpan = input("Simpan semua pesanan di atas? (y/n): ").strip().lower()
+        simpan = konfirmasi_yn("Simpan semua pesanan di atas? (y/n): ").strip().lower()
         if simpan == "y":
             for pesanan_baru in batch:
                 pesanan.append(pesanan_baru)
@@ -365,13 +389,13 @@ def update_menu_makanan():
             print("Nama menu sudah ada, tidak boleh duplikat.")
             input("Tekan Enter untuk lanjut...")
             continue
-        harga_baru = input(f"Harga baru [{menu['harga']}]: ").strip()
+        harga_baru = input_harga(f"Harga baru [{menu['harga']}]: ")
         stok_baru = input(f"Stok baru [{menu['stok']}]: ").strip()
         print("\nKonfirmasi perubahan:")
         print(f"Nama   : {nama_baru if nama_baru else menu['nama']}")
         print(f"Harga  : {harga_baru if harga_baru else menu['harga']}")
         print(f"Stok   : {stok_baru if stok_baru else menu['stok']}")
-        konfirm = input("Simpan perubahan? (y/n): ").strip().lower()
+        konfirm = konfirmasi_yn("Simpan perubahan? (y/n): ").strip().lower()
         if konfirm == "y":
             if nama_baru:
                 menu['nama'] = nama_baru
@@ -427,7 +451,7 @@ def update_pesanan():
             print("Nama hanya boleh huruf dan spasi.")
             input("Tekan Enter untuk lanjut...")
             continue
-        tambah_item = input("Tambah menu ke pesanan? (y/n): ").strip().lower()
+        tambah_item = konfirmasi_yn("Tambah menu ke pesanan? (y/n): ").strip().lower()
         items_baru = pes['items'].copy()
         total_harga_baru = pes['total_harga']
         if tambah_item == "y":
@@ -473,7 +497,7 @@ def update_pesanan():
         print(f"Nama Pemesan: {nama_baru if nama_baru else pes['nama_pemesan']}")
         print(f"Total Harga : {total_harga_baru}")
         print(f"Status      : {status_baru}")
-        konfirm = input("Simpan perubahan? (y/n): ").strip().lower()
+        konfirm = konfirmasi_yn("Simpan perubahan? (y/n): ").strip().lower()
         if konfirm == "y":
             if nama_baru:
                 pes['nama_pemesan'] = nama_baru
@@ -675,32 +699,38 @@ def sub_menu_export():
 # ========== EXPORT KE CSV ==========
 
 def export_menu_to_csv():
+    import os
     clear()
     filename = input("Nama file output (misal: menu.csv): ").strip()
     if not filename:
         print("Nama file tidak boleh kosong!")
         input("Tekan Enter untuk kembali...")
         return
+    downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+    file_path = os.path.join(downloads_path, filename)
     try:
-        with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=["id", "nama", "harga", "stok"])
             writer.writeheader()
             for m in menu_makanan:
                 writer.writerow(m)
-        print(f"Data menu berhasil diexport ke {filename}")
+        print(f"Data menu berhasil diexport ke {file_path}")
     except Exception as e:
         print(f"Export gagal: {e}")
     input("Tekan Enter untuk kembali...")
 
 def export_pesanan_to_csv():
+    import os
     clear()
     filename = input("Nama file output (misal: pesanan.csv): ").strip()
     if not filename:
         print("Nama file tidak boleh kosong!")
         input("Tekan Enter untuk kembali...")
         return
+    downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+    file_path = os.path.join(downloads_path, filename)
     try:
-        with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = ["id", "nama_pemesan", "menu_dipesan", "total_harga", "status", "tanggal"]
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
@@ -714,10 +744,11 @@ def export_pesanan_to_csv():
                     "status": p["status"],
                     "tanggal": p["tanggal"]
                 })
-        print(f"Data pesanan berhasil diexport ke {filename}")
+        print(f"Data pesanan berhasil diexport ke {file_path}")
     except Exception as e:
         print(f"Export gagal: {e}")
     input("Tekan Enter untuk kembali...")
+
 
 # ========== MENU UTAMA ==========
 
