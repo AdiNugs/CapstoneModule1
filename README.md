@@ -19,6 +19,27 @@ Aplikasi ini dijalankan di komputer lokal melalui command line/terminal tanpa me
 
 - Memberikan dasar aplikasi yang mudah dikembangkan lagi, baik ke web, desktop, ataupun integrasi database.
 
+# Data yang Disimpan
+Aplikasi ini menyimpan dua jenis data utama:
+
+1. Menu Makanan (menu_makanan)
+- id (integer): ID unik menu
+- nama (string): Nama makanan/minuman
+- harga (integer): Harga satuan (rupiah, kelipatan 1000)
+- stok (integer): Stok menu tersedia
+
+2. Pesanan (pesanan)
+- id (integer): ID unik pesanan
+- nama_pemesan (string): Nama pelanggan
+- items (list): Daftar item yang dipesan, terdiri dari:
+  - menu_id (integer): ID menu
+  - menu (string): Nama menu
+  - jumlah (integer): Jumlah pesanan
+  - subtotal (integer): Total harga untuk menu tersebut
+- total_harga (integer): Total harga pesanan
+- status (string): Status pesanan (Diproses, Selesai, Dibatalkan)
+- tanggal (string): Tanggal & waktu pesanan
+
 # Fitur
 
 - **Login Pemilik Toko:** Keamanan akses aplikasi.
